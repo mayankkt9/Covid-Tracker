@@ -163,6 +163,230 @@
             }
         }
 
+        function transformJSON(data){
+            
+            new_object = {}
+            data.forEach(obj => {
+                obj.Country = getCountryCode(obj.Country);
+                new_object[obj.Country] = obj["Confirmed cases"];
+
+            });
+
+            return new_object
+        }
+
+        function makeChartData(data){
+            cnf_cntr = []
+            dth_cntr = [];
+            rcvd_cntr = [];
+            dt_cntr = []
+
+            data.forEach(cntr => {
+                if(cntr.confirmed != 0){
+                    cnf_cntr.push(cntr.confirmed);
+                    dth_cntr.push(cntr.deaths); 
+                    rcvd_cntr.push(cntr.recovered);
+                    dt_cntr.push(cntr.date)
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            data = $("#data-table").tableToJSON();
+            data = transformJSON(data);
+
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: '# of confirmed cases',
+                        data: conf_sum,
+                        borderColor: 'rgba(255, 190, 0, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '# of deaths',
+                        data: death_sum,
+                        borderColor: 'rgba(255, 0, 0, 1)',
+                        borderWidth: 1
+                    },
+                    /*{
+                        label: '# of recoveries',
+                        data: reco_sum,
+                        borderColor: 'rgba(0, 255, 0, 1)',
+                        borderWidth: 1
+                    }*/]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+			    type: 'logarithmic',
+                            ticks: {
+                                beginAtZero: true,
+				callback: function (value, index, values) {
+             			    if (value === 1000000) return "1M";
+			            if (value === 100000) return "100K";
+			            if (value === 10000) return "10K";
+			            if (value === 1000) return "1K";
+			            if (value === 100) return "100";
+			            if (value === 10) return "10";
+			            if (value === 0) return "0";
+			            return null;
+         			}
+                            }
+                        }]
+                    }
+                }
+            });
+
+            $('#map').vectorMap({
+                map: 'world_mill',
+                backgroundColor:'#3b4147',
+                zoomAnimate: true,
+                series: {
+                    regions: [{
+                        values: data,
+                        scale: ['#FFFFFF', '#ff0000'],
+                        normalizeFunction: 'polynomial'
+                    }]
+                },
+                onRegionTipShow: function(event, label, code){
+                    label.html(label.html() +' (' + code.toString() + 
+                    ') <br>Confirmed: ' + data[code]);
+                }
+            });
+
+            $("#data-table tr").click(function(){
+                selectCountry($(this).attr("id"), myChart);
+                
+            });
+            $('select').on('change', function() {
+                selectCountry(this.value, myChart);
+            });
+
+            newCasesTd = $("[id$='-new-cases'");
+            newCasesTd.each(function (i, td) {
+                nc = parseInt($(td).text());
+
+                if (nc > 0) {
+                    $(td).text("⬆"+ numberWithCommas(nc));
+                    $(td).addClass("text-warning");
+                } else {
+                    $(td).text("⬅0");
+                    $(td).addClass("text-success");
+                }
+            });
+
+            newDeathsTd = $("[id$='-new-deaths'");
+            newDeathsTd.each(function (i, td) {
+                nc = parseInt($(td).text());
+
+                if (nc > 0) {
+                    $(td).text("⬆ "+ numberWithCommas(nc));
+                    $(td).addClass("text-warning");
+                } else {
+                    $(td).text("⬅ 0");
+                    $(td).addClass("text-success");
+                }
+            });
+            
+            confirmedTd = $("[id$='-confirmed'");
+            confirmedTd.each(function (i, td) {
+                nc = $(td).text();
+                $(td).text(numberWithCommas(nc));
+            });
+
+            deathsTd = $("[id$='-deaths'");
+            deathsTd.each(function (i, td) {
+                nc = $(td).text();
+                $(td).text(numberWithCommas(nc));
+            });
+
+            seriousTd = $("[id$='-serious'");
+            seriousTd.each(function (i, td) {
+                nc = $(td).text();
+                $(td).text(numberWithCommas(nc));
+            });
+
+            activeTd = $("[id$='-active'");
+            activeTd.each(function (i, td) {
+                nc = $(td).text();
+                $(td).text(numberWithCommas(nc));
+            });
+
+            recoveredTd = $("[id$='-recovered'");
+            recoveredTd.each(function (i, td) {
+                nc = $(td).text();
+                $(td).text(numberWithCommas(nc));
+            });
+
+            $("#countries").text($('#data-table tr').length - 1);
+
+        });
+
+
+        function selectCountry(newCountry, myChart){
+           if(newCountry != "header"){
+		        if(newCountry != country){
+                    $("#"+newCountry).addClass('bg-danger').siblings().removeClass('bg-danger');
+                    $('.selectpicker').val(newCountry);
+                    $('.selectpicker').selectpicker('render');
+                    var ctry = check_country($("#"+newCountry+"-country").text());
+                    if(ctry!="Global"){
+                        $.ajax({
+                            url: '/ajax/get_country/',
+                            data: {
+                                'country': ctry
+                            },
+                            dataType: 'json',
+                            success: function (data) {
+                                makeChartData(data[ctry]);
+                                myChart.data.datasets[0] = {
+                                    label: '# of confirmed cases',
+                                    data: cnf_cntr,
+                                    borderColor: 'rgba(255, 190, 0, 1)',
+                                    borderWidth: 1
+                                };
+                                myChart.data.datasets[1] = {
+                                    label: '# of deaths',
+                                    data: dth_cntr,
+                                    borderColor: 'rgba(255, 0, 0, 1)',
+                                    borderWidth: 1
+                                };
+                                /*myChart.data.datasets[2] = {
+                                    label: '# of recoveries',
+                                    data: rcvd_cntr,
+                                    borderColor: 'rgba(0, 255, 0, 1)',
+                                    borderWidth: 1
+                                };*/
+                                myChart.data.labels = dt_cntr;
+                                myChart.update();
+                            }                        
+                        });
+                    }else{
+                        myChart.data.datasets[0] = {
+                            label: '# of confirmed cases',
+                            data: conf_sum,
+                            borderColor: 'rgba(255, 190, 0, 1)',
+                            borderWidth: 1
+                        };
+                        myChart.data.datasets[1] = {
+                            label: '# of deaths',
+                            data: death_sum,
+                            borderColor: 'rgba(255, 0, 0, 1)',
+                            borderWidth: 1
+                        };
+                        myChart.data.datasets[2] = {
+                            label: '# of recoveries',
+                            data: reco_sum,
+                            borderColor: 'rgba(0, 255, 0, 1)',
+                            borderWidth: 1
+                        };
+                        myChart.data.labels = dates;
+                        myChart.update();
+                    }
                     
                     var conf = $("#"+newCountry+"-confirmed").text();
                     var death = $("#"+newCountry+"-deaths").text();
