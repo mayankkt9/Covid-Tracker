@@ -1,8 +1,5 @@
-import os
-
-from django.core.wsgi import get_wsgi_application
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'covid19_tracker.settings')
+from django.apps import AppConfig
 
 
-application = get_wsgi_application()
+class TrackerConfig(AppConfig):
+    name = 'tracker'
