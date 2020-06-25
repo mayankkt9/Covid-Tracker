@@ -21,5 +21,5 @@ python manage.py runserver
 ## ⚙ Demo
 ------------------ 
 
-![Main Page](https://github.com/mayankkt9/Covid-Tracker/blob/master/1.png)
-![Main Page](https://github.com/mayankkt9/Covid-Tracker/blob/master/2.png)
+![Main Page](https://github.com/mayankkt9/Covid-Tracker/blob/master/3.png)
+![Main Page](https://github.com/mayankkt9/Covid-Tracker/blob/master/4.png)

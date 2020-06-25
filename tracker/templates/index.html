@@ -79,26 +79,26 @@
                         <tr id="header">
                         <th>Country</th>
                         <th>Confirmed cases</th>
-                        <th>New cases</th>
+                        
                         <th>Deaths</th>
-                        <th>New deaths</th>
-                        <th>Serious cases</th>
+                        
+                        
                         <th>Recovered</th>
                         <th>Active cases</th>
-                        <th>Mortality</th>
+                        
                         
                         </tr>
                     {% for country in latest %}
                     <tr id="{{country.country|fix_id}}" class="{{country.country}}">
                         <td id="{{country.country|fix_id}}-country">{{country.country}}</td>
                         <td id="{{country.country|fix_id}}-confirmed">{{country.confirmed}}</td>
-                        <td id="{{country.country|fix_id}}-new-cases">{{country.new_cases}}</td>
+                        
                         <td id="{{country.country|fix_id}}-deaths">{{country.deaths}}</td>
-                        <td id="{{country.country|fix_id}}-new-deaths">{{country.new_deaths}}</td>
-                        <td id="{{country.country|fix_id}}-serious">{{ country.serious }}</td>
+                        
+                        
                         <td id="{{country.country|fix_id}}-recovered">{{country.recovered}}</td>
                         <td id="{{country.country|fix_id}}-active">{{country.active}}</td>
-                        <td id="{{country.country|fix_id}}-mortality">{{country.mortality}}%</td>
+                        
                         
                     </tr>
                     {% endfor %}
